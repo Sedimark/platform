@@ -1,0 +1,24 @@
+services:
+  kafka:
+    networks: !override
+      - stellio
+
+  postgres:
+    networks: !override
+      - stellio
+
+  api-gateway:
+    networks: !override
+      - sedimark_shared
+      - stellio
+
+  search-service:
+    networks: !override
+      - stellio
+
+  subscription-service:
+    networks: !override
+      - stellio
+
+networks:
+  shared_network: !reset null
