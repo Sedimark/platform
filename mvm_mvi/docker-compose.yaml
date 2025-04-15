@@ -1,0 +1,12 @@
+include:
+  - path: ../mvm/docker-compose.yaml
+  - path:
+      - ./Sedimark-Toolbox/ngsild_broker_deployment/docker-compose.yml
+      - ./stellio-override.yaml
+    env_file: ./Sedimark-Toolbox/ngsild_broker_deployment/.env
+
+networks:
+  sedimark_shared:
+    driver: bridge
+  stellio:
+    driver: bridge

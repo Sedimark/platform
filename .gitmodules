@@ -1,0 +1,3 @@
+[submodule "mvm_mvi/Sedimark-Toolbox"]
+	path = mvm_mvi/Sedimark-Toolbox
+	url = git@github.com:Sedimark/Sedimark-Toolbox.git
