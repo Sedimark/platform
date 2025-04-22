@@ -1,0 +1,36 @@
+services:
+  mlflow:
+    networks: !override
+      - toolbox
+
+  mlflow_postgres:
+    networks: !override
+      - toolbox
+
+  minio:
+    networks: !override
+      - toolbox
+
+  minio-init:
+    networks: !override
+      - toolbox
+
+  magic:
+    networks: !override
+      - sedimark_shared
+      - toolbox
+
+  mageapi:
+    networks: !override
+      - toolbox
+
+  orchestrator:
+    networks: !override
+      - toolbox
+
+  mlflowapi:
+    networks: !override
+      - toolbox
+
+networks:
+  shared_network: !reset null
