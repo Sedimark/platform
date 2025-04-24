@@ -1,3 +1,6 @@
 [submodule "mvm_mvi/Sedimark-Toolbox"]
 	path = mvm_mvi/Sedimark-Toolbox
 	url = git@github.com:Sedimark/Sedimark-Toolbox.git
+[submodule "mvm/dlt-booth"]
+	path = mvm/dlt-booth
+	url = git@github.com:Sedimark/dlt-booth.git
