@@ -1,16 +1,24 @@
+include:
+  - path:
+      - ./dlt-booth/docker-compose.yml
+      - ./dlt-booth-override.yaml
+  - path:
+      - ./sedimark-issuer/docker-compose.yml
+      - ./issuer-override.yaml
+
 services:
   marketplace:
     image: ghcr.io/sedimark/marketplace-frontend:development
     container_name: marketplace-frontend
     ports:
-      - "3000:3000"
+      - "3001:3000"
     networks:
       - sedimark_shared
     environment:
       - NODE_ENV=production
       - BATCH_SIZE=${MARKETPLACE_BATCH_SIZE}
       - CATALOGUE_URL=${MARKETPLACE_CATALOGUE_URL}
-      - RECOMMENDER_URL=http://recommender:8000
+      - RECOMMENDER_URL=http://recommender:8001
       - DLT_BOOTH_URL=http://dlt-booth:8085
       - BROKER_URL=http://api-gateway:8080
 
@@ -30,7 +38,7 @@ services:
     image: ghcr.io/sedimark/recommender:dev
     container_name: recommender
     ports:
-      - "8000:8000"
+      - "8001:8000"
     volumes:
       - recommender_data:/data/db
     networks:
