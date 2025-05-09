@@ -4,6 +4,3 @@
 [submodule "mvm/dlt-booth"]
 	path = mvm/dlt-booth
 	url = git@github.com:Sedimark/dlt-booth.git
-[submodule "mvm/sedimark-issuer"]
-	path = mvm/sedimark-issuer
-	url = git@github.com:Sedimark/sedimark-issuer.git
