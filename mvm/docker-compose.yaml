@@ -2,9 +2,6 @@ include:
   - path:
       - ./dlt-booth/docker-compose.yml
       - ./dlt-booth-override.yaml
-  - path:
-      - ./sedimark-issuer/docker-compose.yml
-      - ./issuer-override.yaml
 
 services:
   marketplace:
