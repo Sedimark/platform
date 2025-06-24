@@ -1,7 +1,7 @@
 services:
   dlt-booth:
     build: !reset null
-    image: ghcr.io/sedimark/dlt-booth:dev
+    image: ghcr.io/sedimark/dlt-booth:latest
     networks: !override
       - sedimark_shared
       - dlt-booth-net
@@ -21,6 +21,8 @@ services:
       KEY_STORAGE_STRONGHOLD_PASSWORD: ${DLT_KEY_STORAGE_STRONGHOLD_PASSWORD}
       WALLET_STRONGHOLD_SNAPSHOT_PATH: ${DLT_WALLET_STRONGHOLD_SNAPSHOT_PATH}
       WALLET_STRONGHOLD_PASSWORD: ${DLT_WALLET_STRONGHOLD_PASSWORD}
+      FACTORY_SC_ADDRESS: ${DLT_BOOTH_FACTORY_SC_ADDRESS}
+      FIXED_RATE_EXCHANGE_SC_ADDRESS: ${DLT_BOOTH_FIXED_RATE_EXCHANGE_SC_ADDRESS}
       DB_USER: ${DLT_BOOTH_DB_USER:-postgres}
       DB_PASSWORD: ${DLT_BOOTH_DB_PASSWORD:-dlt_booth}
       DB_NAME: dlt_booth
