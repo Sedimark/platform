@@ -21,8 +21,6 @@ services:
       KEY_STORAGE_STRONGHOLD_PASSWORD: ${DLT_KEY_STORAGE_STRONGHOLD_PASSWORD}
       WALLET_STRONGHOLD_SNAPSHOT_PATH: ${DLT_WALLET_STRONGHOLD_SNAPSHOT_PATH}
       WALLET_STRONGHOLD_PASSWORD: ${DLT_WALLET_STRONGHOLD_PASSWORD}
-      FACTORY_SC_ADDRESS: ${DLT_BOOTH_FACTORY_SC_ADDRESS}
-      FIXED_RATE_EXCHANGE_SC_ADDRESS: ${DLT_BOOTH_FIXED_RATE_EXCHANGE_SC_ADDRESS}
       DB_USER: ${DLT_BOOTH_DB_USER:-postgres}
       DB_PASSWORD: ${DLT_BOOTH_DB_PASSWORD:-dlt_booth}
       DB_NAME: dlt_booth
@@ -40,7 +38,7 @@ services:
       POSTGRES_DB: dlt_booth
     volumes: !override
       - dlt_postgresdata:/var/lib/postgresql/data:ro=true,U=true
-      - ./dlt-booth/dlt-booth/sql/dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql:ro=true,U=true
+      - ./dlt-booth/sql/dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql:ro=true,U=true
       # Below is a workaround for those running Docker on macOS with Colima. Due to this issue:
       # https://github.com/abiosoft/colima/issues/844
       # you need to copy the DB init script to a location that Colima can access. By default,
