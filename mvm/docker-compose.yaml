@@ -1,7 +1,6 @@
 include:
   - path:
-      - ./dlt-booth/docker-compose.yml
-      - ./dlt-booth-override.yaml
+      - ./dlt-booth.yaml
 
 services:
   marketplace:

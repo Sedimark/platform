@@ -1,17 +1,14 @@
 services:
   dlt-booth:
-    build: !reset null
-    image: ghcr.io/sedimark/dlt-booth:latest
-    networks: !override
+    image: ghcr.io/sedimark/dlt-booth:dev
+    restart: unless-stopped
+    networks:
       - sedimark_shared
-      - dlt-booth-net
-    profiles: !reset null
-    env_file: !reset null
-    environment: !override
+    environment:
       RUST_LOG: ${DLT_RUST_LOG:-info}
       RUST_BACKTRACE: ${DLT_RUST_BACKTRACE:-1}
-      HOST_ADDRESS: ${DLT_HOST_ADDRES:-0.0.0.0}
-      HOST_PORT: ${DLT_HOST_ADDRES:-8085}
+      HOST_ADDRESS: ${DLT_HOST_ADDRESS:-0.0.0.0}
+      HOST_PORT: ${DLT_HOST_PORT:-8085}
       NODE_URL: ${DLT_NODE_URL}
       FAUCET_API_ENDPOINT: ${DLT_FAUCET_API_ENDPOINT}
       RPC_PROVIDER: ${DLT_RPC_PROVIDER}
@@ -27,31 +24,33 @@ services:
       DB_HOST: "postgres" # "postgres" for deploying, "127.0.0.1 " for dev
       DB_PORT: 5432
       DB_MAX_POOL_SIZE: 16
-
+    volumes:
+      - dlt_booth_data:/data:ro=true,U=true
+    healthcheck:
+      test: ["CMD-SHELL", "sh -c \"curl -f http://localhost:${DLT_HOST_PORT}/api/health || exit 1\""]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      postgres:
+       condition: service_healthy 
+  
   postgres:
     image: postgres:16
-    profiles: !reset null
-    env_file: !reset null
-    environment: !override
+    environment:
       POSTGRES_USER: ${DLT_BOOTH_DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DLT_BOOTH_DB_PASSWORD:-dlt_booth}
       POSTGRES_DB: dlt_booth
-    volumes: !override
+    volumes:
       - dlt_postgresdata:/var/lib/postgresql/data:ro=true,U=true
-      - ./dlt-booth/sql/dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql:ro=true,U=true
-      # Below is a workaround for those running Docker on macOS with Colima. Due to this issue:
-      # https://github.com/abiosoft/colima/issues/844
-      # you need to copy the DB init script to a location that Colima can access. By default,
-      # /tmp/colima is always mounted, so do `cp ./dlt-booth/dlt-booth/sql/dbinit.sql /tmp/colima/dlt_dbinit.sql`
-      # and uncomment the line below to use it.
-      # - /tmp/colima/dlt_dbinit.sql:/docker-entrypoint-initdb.d/dbinit.sql:ro=true,U=true
-    networks: !override
-      - sedimark_shared
-      - dlt-booth-net
-
-networks:
-  dlt-booth-net:
-    driver: bridge
+    networks:
+    - sedimark_shared
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   dlt_postgresdata:
+  dlt_booth_data:
