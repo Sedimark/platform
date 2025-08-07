@@ -19,6 +19,18 @@ services:
       - DLT_BOOTH_URL=http://dlt-booth:8085
       - BROKER_URL=http://api-gateway:8080
 
+  profile:
+    image: ghcr.io/sedimark/profile:latest
+    container_name: profile
+    ports:
+      - "3005:3005"
+    networks:
+      - sedimark_shared
+    environment:
+      - API_KEY=${PROFILE_API_KEY}
+    volumes:
+      - profile_server_data:/app/data
+
   catalogue:
     image: stain/jena-fuseki:latest
     container_name: catalogue
@@ -44,6 +56,7 @@ services:
       - CATALOGUE_URL=${MARKETPLACE_CATALOGUE_URL}
 
 volumes:
+  profile_server_data:
   catalogue_data:
   recommender_data:
 
