@@ -1,11 +1,10 @@
 include:
   - path:
-      - ./dlt-booth/docker-compose.yml
-      - ./dlt-booth-override.yaml
+      - ./dlt-booth.yaml
 
 services:
   marketplace:
-    image: ghcr.io/sedimark/marketplace-frontend:development
+    image: ghcr.io/sedimark/marketplace-frontend/marketplace-frontend:development
     container_name: marketplace-frontend
     ports:
       - "3001:3000"
