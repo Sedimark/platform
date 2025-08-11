@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     networks:
       - sedimark_shared
+      - dlt_booth_net
     environment:
       RUST_LOG: ${DLT_RUST_LOG:-info}
       RUST_BACKTRACE: ${DLT_RUST_BACKTRACE:-1}
@@ -44,13 +45,15 @@ services:
     volumes:
       - dlt_postgresdata:/var/lib/postgresql/data:ro=true,U=true
     networks:
-    - sedimark_shared
+    - dlt_booth_net
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
       interval: 10s
       timeout: 5s
       retries: 5
 
+networks:
+  dlt_booth_net:
 volumes:
   dlt_postgresdata:
   dlt_booth_data:
