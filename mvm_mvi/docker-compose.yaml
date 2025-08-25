@@ -4,9 +4,16 @@ include:
       - ./Sedimark-Toolbox/ngsild_broker_deployment/docker-compose.yml
       - ./stellio-override.yaml
     env_file: ./Sedimark-Toolbox/ngsild_broker_deployment/.env
+  - path:
+      - ./Sedimark-Toolbox/toolbox_deployment/docker-compose.yaml
+      - ./toolbox-override.yaml
+    env_file:
+      - ./Sedimark-Toolbox/toolbox_deployment/.env
 
 networks:
   sedimark_shared:
     driver: bridge
   stellio:
+    driver: bridge
+  toolbox:
     driver: bridge
