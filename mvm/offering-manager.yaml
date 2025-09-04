@@ -1,0 +1,58 @@
+services:
+  offering-manager:
+    image: ghcr.io/sedimark/offering-manager:latest
+    # pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      postgres-offering-manager:
+        condition: service_healthy
+      connector-controlplane:
+        condition: service_healthy
+      dlt-booth:
+        condition: service_healthy
+    ports:
+      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:8080" # Offering Manager API, exposed for local client applications
+    environment:
+      CONTAINER_ENDPOINT: http://0.0.0.0:8080
+      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}
+      ENABLE_CONNECTOR_SERVICE: true
+      EXTERNAL_CONNECTOR_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:8185/api/public
+      INTERNAL_CONNECTOR_ENDPOINT: http://connector-controlplane:8181
+      ENABLE_DLTBOOTH_SERVICE: true
+      INTERNAL_DLTBOOTH_ENDPOINT: http://dlt-booth:${DLT_HOST_PORT}
+      HASH_ALGORITHM: "${OM_HASH_ALGORITHM:-SHA-256}"
+      ENABLE_POSTGRES_PERSISTENCE: true
+      POSTGRES_DB: ${OM_PERSISTENCE_DATABASE}
+      POSTGRES_USER: ${OM_PERSISTENCE_USER}
+      POSTGRES_PASSWORD: ${OM_PERSISTENCE_PASSWORD}
+      POSTGRES_HOST: postgres-offering-manager
+      POSTGRES_PORT: 5432
+    logging:
+      driver: local
+    networks:
+      - sedimark_shared
+      - offering-manager-network
+
+  postgres-offering-manager:
+    image: postgres:16
+    container_name: postgres-offering-manager
+    ports:
+      - "5432:5432"
+    env_file:
+      - ./default.env
+    volumes:
+      - offering_manager_postgresdata:/var/lib/postgresql/data:ro=true,U=true"
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - offering-manager-network
+
+
+  networks:
+    offering-manager_network:
+  volumes:
+    offering_manager_postgresdata:
