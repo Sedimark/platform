@@ -30,18 +30,6 @@ services:
     volumes:
       - profile_server_data:/app/data
 
-  catalogue:
-    image: stain/jena-fuseki:latest
-    container_name: catalogue
-    ports:
-      - "3030:3030"
-    volumes:
-      - catalogue_data:/fuseki
-    networks:
-      - sedimark_shared
-    environment:
-      - ADMIN_PASSWORD=${CATALOGUE_ADMIN_PASSWORD}
-
   recommender:
     image: ghcr.io/sedimark/recommender:dev
     container_name: recommender
@@ -56,7 +44,6 @@ services:
 
 volumes:
   profile_server_data:
-  catalogue_data:
   recommender_data:
 
 networks:
