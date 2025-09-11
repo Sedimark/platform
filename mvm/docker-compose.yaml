@@ -1,6 +1,9 @@
 include:
   - path:
       - ./dlt-booth.yaml
+      - ./offering-manager.yaml
+      - ./connector.yaml
+      - ./verifier.yaml
 
 services:
   marketplace:

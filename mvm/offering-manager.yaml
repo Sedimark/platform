@@ -31,28 +31,30 @@ services:
       driver: local
     networks:
       - sedimark_shared
-      - offering-manager-network
+      - offering_manager_network
 
   postgres-offering-manager:
-    image: postgres:16
-    container_name: postgres-offering-manager
-    ports:
-      - "5432:5432"
-    env_file:
-      - ./default.env
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${OM_PERSISTENCE_DATABASE}
+      POSTGRES_USER: ${OM_PERSISTENCE_USER}
+      POSTGRES_PASSWORD: ${OM_PERSISTENCE_PASSWORD}
+      PGDATA: /data/postgres
     volumes:
-      - offering_manager_postgresdata:/var/lib/postgresql/data:ro=true,U=true"
-    restart: always
+      - offering_manager_postgresdata:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      start_period: 30s
+      timeout: 10s
       interval: 10s
-      timeout: 5s
       retries: 5
+    logging:
+      driver: local
     networks:
-      - offering-manager-network
+      - offering_manager_network
 
-
-  networks:
-    offering-manager_network:
-  volumes:
-    offering_manager_postgresdata:
+networks:
+  offering_manager_network:
+volumes:
+  offering_manager_postgresdata:
