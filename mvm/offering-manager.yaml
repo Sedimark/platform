@@ -11,10 +11,10 @@ services:
       dlt-booth:
         condition: service_healthy
     ports:
-      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:8080" # Offering Manager API, exposed for local client applications
+      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}" # Offering Manager API, exposed for local client applications. We assume the same port is forwarded.
     environment:
       CONTAINER_ENDPOINT: http://0.0.0.0:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
-      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}
+      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
       ENABLE_CONNECTOR_SERVICE: true
       EXTERNAL_CONNECTOR_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${CONN_WEB_HTTP_PUBLIC_PORT:-8185}${CONN_WEB_HTTP_PUBLIC_PATH:-/api/public}
       INTERNAL_CONNECTOR_ENDPOINT: http://connector-controlplane:${CONN_WEB_HTTP_MANAGEMENT_PORT}
