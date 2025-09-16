@@ -22,9 +22,9 @@ services:
       - RECOMMENDER_URL=http://recommender:8001
       - DLT_BOOTH_URL=http://dlt-booth:8085
       - BROKER_URL=http://api-gateway:8080
-      - CONNECTOR_URL="http://connector-controlplane:${CONN_CP_EXTERNAL_MANAGEMENT_PORT:-8181}"
-      - OFFERING_MANAGER_URL="http://offering-manager:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}"
-      - WEBSERVER_URL="http://profile:3005"
+      - CONNECTOR_URL=http://connector-controlplane:${CONN_CP_EXTERNAL_MANAGEMENT_PORT:-8181}
+      - OFFERING_MANAGER_URL=http://offering-manager:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
+      - WEBSERVER_URL=http://profile:3005
       - WEBSERVER_TOKEN=${PROFILE_API_KEY}
 
   profile:
