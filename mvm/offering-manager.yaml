@@ -11,13 +11,13 @@ services:
       dlt-booth:
         condition: service_healthy
     ports:
-      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:8080" # Offering Manager API, exposed for local client applications
+      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}" # Offering Manager API, exposed for local client applications. We assume the same port is forwarded.
     environment:
-      CONTAINER_ENDPOINT: http://0.0.0.0:8080
-      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}
+      CONTAINER_ENDPOINT: http://0.0.0.0:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
+      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
       ENABLE_CONNECTOR_SERVICE: true
-      EXTERNAL_CONNECTOR_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:8185/api/public
-      INTERNAL_CONNECTOR_ENDPOINT: http://connector-controlplane:8181
+      EXTERNAL_CONNECTOR_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${CONN_WEB_HTTP_PUBLIC_PORT:-8185}${CONN_WEB_HTTP_PUBLIC_PATH:-/api/public}
+      INTERNAL_CONNECTOR_ENDPOINT: http://connector-controlplane:${CONN_WEB_HTTP_MANAGEMENT_PORT}
       ENABLE_DLTBOOTH_SERVICE: true
       INTERNAL_DLTBOOTH_ENDPOINT: http://dlt-booth:${DLT_HOST_PORT}
       HASH_ALGORITHM: "${OM_HASH_ALGORITHM:-SHA-256}"
@@ -31,28 +31,30 @@ services:
       driver: local
     networks:
       - sedimark_shared
-      - offering-manager-network
+      - offering_manager_network
 
   postgres-offering-manager:
-    image: postgres:16
-    container_name: postgres-offering-manager
-    ports:
-      - "5432:5432"
-    env_file:
-      - ./default.env
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${OM_PERSISTENCE_DATABASE}
+      POSTGRES_USER: ${OM_PERSISTENCE_USER}
+      POSTGRES_PASSWORD: ${OM_PERSISTENCE_PASSWORD}
+      PGDATA: /data/postgres
     volumes:
-      - offering_manager_postgresdata:/var/lib/postgresql/data:ro=true,U=true"
-    restart: always
+      - offering_manager_postgresdata:/data/postgres
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      start_period: 30s
+      timeout: 10s
       interval: 10s
-      timeout: 5s
       retries: 5
+    logging:
+      driver: local
     networks:
-      - offering-manager-network
+      - offering_manager_network
 
-
-  networks:
-    offering-manager_network:
-  volumes:
-    offering_manager_postgresdata:
+networks:
+  offering_manager_network:
+volumes:
+  offering_manager_postgresdata:
