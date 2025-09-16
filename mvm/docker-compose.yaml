@@ -4,7 +4,7 @@ include:
 
 services:
   marketplace:
-    image: ghcr.io/sedimark/marketplace-frontend/marketplace-frontend:development
+    image: ghcr.io/sedimark/marketplace-frontend:development
     container_name: marketplace-frontend
     ports:
       - "3001:3000"
@@ -13,8 +13,8 @@ services:
     environment:
       - NODE_ENV=production
       - BATCH_SIZE=${MARKETPLACE_BATCH_SIZE:-10}
-      - MAX_RETRIES_GET_EDR="${MARKETPLACE_MAX_RETRIES_GET_EDR:-5}"
-      - OFFERING_PAGE_SIZE="${MARKETPLACE_OFFERING_PAGE_SIZE:-5}"
+      - MAX_RETRIES_GET_EDR=${MARKETPLACE_MAX_RETRIES_GET_EDR:-5}
+      - OFFERING_PAGE_SIZE=${MARKETPLACE_OFFERING_PAGE_SIZE:-5}
       - CATALOGUE_URL=${MARKETPLACE_CATALOGUE_URL}
       - RECOMMENDER_URL=http://recommender:8001
       - DLT_BOOTH_URL=http://dlt-booth:8085
