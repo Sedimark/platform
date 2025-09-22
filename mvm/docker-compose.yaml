@@ -7,7 +7,7 @@ include:
 
 services:
   marketplace:
-    image: ghcr.io/sedimark/marketplace-frontend:development
+    image: ghcr.io/sedimark/marketplace-frontend:stable
     container_name: marketplace-frontend
     ports:
       - "3001:3000"
