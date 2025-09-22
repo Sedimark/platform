@@ -19,7 +19,7 @@ services:
       - MAX_RETRIES_GET_EDR=${MARKETPLACE_MAX_RETRIES_GET_EDR:-5}
       - OFFERING_PAGE_SIZE=${MARKETPLACE_OFFERING_PAGE_SIZE:-5}
       - CATALOGUE_URL=${MARKETPLACE_CATALOGUE_URL}
-      - RECOMMENDER_URL=http://recommender:8001
+      - RECOMMENDER_URL=http://recommender:8000
       - DLT_BOOTH_URL=http://dlt-booth:8085
       - BROKER_URL=http://api-gateway:8080
       - CONNECTOR_URL=http://connector-controlplane:${CONN_CP_EXTERNAL_MANAGEMENT_PORT:-8181}
