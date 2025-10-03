@@ -1,0 +1,14 @@
+services:
+  verifier:
+    image: ghcr.io/cybersecurity-links/mediterraneus-verifier:0.0.2
+    restart: unless-stopped
+    environment:
+      NODE_URL: ${DLT_NODE_URL}
+      RPC_PROVIDER: ${DLT_RPC_PROVIDER}
+      PORT: ${VERIFIER_HOST_PORT} # Http server bind port
+      ALLOW_ORIGIN: "http://localhost" # Dynamic CORS
+      DATABASE_URL: "verifier.db" # Internal SQLite database
+    logging:
+      driver: local
+    networks:
+      sedimark_shared:

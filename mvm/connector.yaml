@@ -1,0 +1,126 @@
+services:
+  connector-controlplane:
+    image: ghcr.io/sedimark/sed-conn-controlplane:0.5
+    # pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      connector-postgres:
+        condition: service_healthy
+      dlt-booth:
+        condition: service_healthy
+    ports:
+      - "${CONN_CP_EXTERNAL_MANAGEMENT_PORT:-8181}:8181" # Management API, exposed for local client applications
+      - "${CONN_CP_EXTERNAL_CONTROL_PORT:-9191}:9191" # Control API, exposed for debugging purposes
+      - "${CONN_CP_EXTERNAL_VERSION_PORT:-7171}:7171" # Version API, exposed for debugging purposes
+      - "${CONN_CP_EXTERNAL_DSP_PORT:-8282}:8282" # Data Space Protocol API, has to be publicly accessible
+    environment:
+      LOG_LEVEL: info
+      EDC_HOSTNAME: ${SED_PUBLIC_HOSTNAME}
+      EDC_PARTICIPANT_ID: ${SED_PARTICIPANT_ID}
+      EDC_DATASOURCE_DEFAULT_URL: jdbc:postgresql://connector-postgres:5432/${CONN_PERSISTENCE_DATABASE}
+      EDC_DATASOURCE_DEFAULT_USER: ${CONN_PERSISTENCE_USER}
+      EDC_DATASOURCE_DEFAULT_PASSWORD: ${CONN_PERSISTENCE_PASSWORD}
+      EDC_SQL_SCHEMA_AUTOCREATE: true
+      WEB_HTTP_PROTOCOL_PORT: ${CONN_WEB_HTTP_PROTOCOL_PORT:-8282}
+      WEB_HTTP_PROTOCOL_PATH: ${CONN_WEB_HTTP_PROTOCOL_PATH:-/api/dsp}
+      WEB_HTTP_MANAGEMENT_PORT: ${CONN_WEB_HTTP_MANAGEMENT_PORT:-8181}
+      WEB_HTTP_MANAGEMENT_PATH: ${CONN_WEB_HTTP_MANAGEMENT_PATH:-/api/dsp}
+      WEB_HTTP_VERSION_PORT: ${CONN_WEB_HTTP_VERSION_PORT:-7171}
+      WEB_HTTP_VERSION_PATH: ${CONN_WEB_HTTP_VERSION_PATH:-/.well-known/api}
+      WEB_HTTP_CONTROL_PORT: ${CONN_WEB_HTTP_CONTROL_PORT:-9191}
+      WEB_HTTP_CONTROL_PATH: ${CONN_WEB_HTTP_CONTROL_PATH:-/api/control}
+      WEB_HTTP_PORT: ${CONN_WEB_HTTP_PORT:-18181}
+      WEB_HTTP_PATH: ${CONN_WEB_HTTP_PATH:-/api}
+      EDC_CONTROL_ENDPOINT: http://connector-dataplane:${CONN_WEB_HTTP_CONTROL_PORT}${CONN_WEB_HTTP_CONTROL_PATH}
+      EDC_DSP_CALLBACK_ADDRESS: http://${SED_PUBLIC_HOSTNAME}:${CONN_CP_PUBLIC_DSP_PORT}${CONN_WEB_HTTP_PROTOCOL_PATH}
+      EDC_HTTP_CLIENT_HTTPS_ENFORCE: ${CONN_HTTPS_ENFORCE}
+      SED_DLT_BOOTH_BASE_URL: "http://dlt-booth:${DLT_HOST_PORT}"
+      SED_VERIFIER_BASE_URL: "http://verifier:${VERIFIER_HOST_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:18181/api/check/health"]
+      start_period: 30s
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    logging:
+      driver: local
+    networks:
+      - sedimark_shared
+      - connector_network
+
+  connector-dataplane:
+    image: ghcr.io/sedimark/sed-conn-dataplane:0.5
+    # pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      connector-postgres:
+        condition: service_healthy
+      dlt-booth:
+        condition: service_healthy
+    ports:
+      - "${CONN_DP_EXTERNAL_API_PORT:-8185}:8185" # Data Plane API, must be publicly accessible
+      - "${CONN_DP_EXTERNAL_CONTROL_PORT:-9192}:9191" # Control API, exposed for debugging purposes
+    environment:
+      LOG_LEVEL: info
+      EDC_HOSTNAME: connector-dataplane
+      EDC_DATASOURCE_DEFAULT_URL: jdbc:postgresql://connector-postgres:5432/${CONN_PERSISTENCE_DATABASE}
+      EDC_DATASOURCE_DEFAULT_USER: ${CONN_PERSISTENCE_USER}
+      EDC_DATASOURCE_DEFAULT_PASSWORD: ${CONN_PERSISTENCE_PASSWORD}
+      EDC_DATASOURCE_DEFAULT_DATABASE: ${CONN_PERSISTENCE_DATABASE}
+      EDC_DATASOURCE_DEFAULT_HOST: connector-postgres
+      EDC_DATASOURCE_DEFAULT_PORT: 5432
+      EDC_SQL_SCHEMA_AUTOCREATE: true
+      WEB_HTTP_PUBLIC_PORT: ${CONN_WEB_HTTP_PUBLIC_PORT:-8185}
+      WEB_HTTP_PUBLIC_PATH: ${CONN_WEB_HTTP_PUBLIC_PATH:-/api/public}
+      EDC_DATAPLANE_API_PUBLIC_BASEURL: "http://${SED_PUBLIC_HOSTNAME}:${CONN_WEB_HTTP_PUBLIC_PORT}${CONN_WEB_HTTP_PUBLIC_PATH}"
+      WEB_HTTP_CONTROL_PORT: ${CONN_WEB_HTTP_CONTROL_PORT:-9191}
+      WEB_HTTP_CONTROL_PATH: ${CONN_WEB_HTTP_CONTROL_PATH:-/api/control}
+      WEB_HTTP_PORT: ${CONN_WEB_HTTP_PORT:-18181}
+      WEB_HTTP_PATH: ${CONN_WEB_HTTP_PATH:-/api}
+      EDC_DPF_SELECTOR_URL: "http://connector-controlplane:${CONN_WEB_HTTP_CONTROL_PORT}${CONN_WEB_HTTP_CONTROL_PATH}/v1/dataplanes"
+      EDC_DATA_PLANE_SELF_UNREGISTRATION: ${CONN_DATA_PLANE_SELF_UNREGISTRATION}
+      EDC_HTTP_CLIENT_HTTPS_ENFORCE: ${CONN_HTTPS_ENFORCE}
+      EDC_TRANSFER_PROXY_TOKEN_SIGNER_PRIVATEKEY_ALIAS: private-key
+      EDC_TRANSFER_PROXY_TOKEN_VERIFIER_PUBLICKEY_ALIAS: public-key
+      EDC_AWS_ACCESS_KEY: "${CONN_AWS_ACCESS_KEY}"
+      EDC_AWS_SECRET_ACCESS_KEY: ${CONN_AWS_SECRET_ACCESS_KEY}
+      SED_DLT_BOOTH_BASE_URL: "http://dlt-booth:${DLT_HOST_PORT}"
+      SED_VERIFIER_BASE_URL: "http://verifier:${VERIFIER_HOST_PORT}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:18181/api/check/health"]
+      start_period: 30s
+      timeout: 5s
+      interval: 5s
+      retries: 10
+    logging:
+      driver: local
+    networks:
+      - sedimark_shared
+      - connector_network
+
+  connector-postgres:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${CONN_PERSISTENCE_DATABASE:-connector_cp_dp}
+      POSTGRES_USER: ${CONN_PERSISTENCE_USER:-connector}
+      POSTGRES_PASSWORD: ${CONN_PERSISTENCE_PASSWORD:-changeme}
+      PGDATA: /data/postgres
+    volumes:
+      - connector_postgresdata:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      start_period: 30s
+      timeout: 10s
+      interval: 10s
+      retries: 5
+    logging:
+      driver: local
+    networks:
+      - connector_network
+
+
+networks:
+  connector_network:
+volumes:
+  connector_postgresdata:

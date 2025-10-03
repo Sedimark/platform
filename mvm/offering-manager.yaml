@@ -1,0 +1,60 @@
+services:
+  offering-manager:
+    image: ghcr.io/sedimark/offering-manager:latest
+    # pull_policy: never
+    restart: unless-stopped
+    depends_on:
+      postgres-offering-manager:
+        condition: service_healthy
+      connector-controlplane:
+        condition: service_healthy
+      dlt-booth:
+        condition: service_healthy
+    ports:
+      - "${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}" # Offering Manager API, exposed for local client applications. We assume the same port is forwarded.
+    environment:
+      CONTAINER_ENDPOINT: http://0.0.0.0:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
+      EXTERNAL_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${OFFERING_MANAGER_EXTERNAL_API_PORT:-8080}
+      ENABLE_CONNECTOR_SERVICE: true
+      EXTERNAL_CONNECTOR_ENDPOINT: http://${SED_PUBLIC_HOSTNAME}:${CONN_WEB_HTTP_PUBLIC_PORT:-8185}${CONN_WEB_HTTP_PUBLIC_PATH:-/api/public}
+      INTERNAL_CONNECTOR_ENDPOINT: http://connector-controlplane:${CONN_WEB_HTTP_MANAGEMENT_PORT}
+      ENABLE_DLTBOOTH_SERVICE: true
+      INTERNAL_DLTBOOTH_ENDPOINT: http://dlt-booth:${DLT_HOST_PORT}
+      HASH_ALGORITHM: "${OM_HASH_ALGORITHM:-SHA-256}"
+      ENABLE_POSTGRES_PERSISTENCE: true
+      POSTGRES_DB: ${OM_PERSISTENCE_DATABASE}
+      POSTGRES_USER: ${OM_PERSISTENCE_USER}
+      POSTGRES_PASSWORD: ${OM_PERSISTENCE_PASSWORD}
+      POSTGRES_HOST: postgres-offering-manager
+      POSTGRES_PORT: 5432
+    logging:
+      driver: local
+    networks:
+      - sedimark_shared
+      - offering_manager_network
+
+  postgres-offering-manager:
+    image: postgres:alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${OM_PERSISTENCE_DATABASE}
+      POSTGRES_USER: ${OM_PERSISTENCE_USER}
+      POSTGRES_PASSWORD: ${OM_PERSISTENCE_PASSWORD}
+      PGDATA: /data/postgres
+    volumes:
+      - offering_manager_postgresdata:/data/postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      start_period: 30s
+      timeout: 10s
+      interval: 10s
+      retries: 5
+    logging:
+      driver: local
+    networks:
+      - offering_manager_network
+
+networks:
+  offering_manager_network:
+volumes:
+  offering_manager_postgresdata:
